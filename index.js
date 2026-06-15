@@ -80,6 +80,13 @@ async function run() {
       res.json(result);
     });
 
+    // api for getting all the booking 
+    app.get('/booking', async(req, res) => {
+      const result = await bookingCollection.find().toArray();
+
+      res.json(result);
+    });
+
 
     // api for adding booking data
     app.post("/booking", async(req, res) => {
