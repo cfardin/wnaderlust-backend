@@ -87,6 +87,15 @@ async function run() {
       res.json(result);
     });
 
+    app.get('/booking/:userId', async(req, res) =>{
+      const {userId} = await req.params;
+      const result = await bookingCollection.findOne(
+        {_id : new ObjectId(userId)}
+      )
+
+      res.json(result);
+    });
+
 
     // api for adding booking data
     app.post("/booking", async(req, res) => {
