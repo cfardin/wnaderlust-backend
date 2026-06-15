@@ -29,6 +29,7 @@ async function run() {
 
     const db = client.db("wanderlust");
     const destinationCollection = db.collection("destinations");
+    const bookingCollection = db.collection("booking");
 
 
     // api to get all destinations 
@@ -77,7 +78,16 @@ async function run() {
       });
 
       res.json(result);
-    })
+    });
+
+
+    // api for adding booking data
+    app.post("/booking", async(req, res) => {
+      const bookingData = req.body;
+      const result = await bookingCollection.insertOne(bookingData);
+
+      res.json(result);
+    });
 
 
 
