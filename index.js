@@ -87,11 +87,19 @@ async function run() {
       res.json(result);
     });
 
-    app.get('/booking/:userId', async(req, res) =>{
-      const {userId} = await req.params;
-      const result = await bookingCollection.findOne(
-        {_id : new ObjectId(userId)}
-      )
+    // app.get('/booking/:userId', async(req, res) =>{
+    //   const {userId} = await req.params;
+    //   const result = await bookingCollection.findOne(
+    //     {_id : new ObjectId(userId)}
+    //   )
+
+    //   res.json(result);
+    // });
+
+    // getting bookings from user id
+    app.get('/booking/:userId', async(req, res) => {
+      const {userId} = req.params; 
+      const result = await bookingCollection.find({userId : userId}).toArray();
 
       res.json(result);
     });
