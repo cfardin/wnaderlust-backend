@@ -5,6 +5,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require("express");
 const dotenv = require('dotenv');
 const cors = require('cors');
+const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
 const app = express();
 dotenv.config();
 
@@ -21,6 +22,34 @@ const client = new MongoClient(process.env.MONGODB_URI, {
     deprecationErrors: true,
   }
 });
+
+const JWKS = createRemoteJWKSet(
+  new URL('http://localhost:3000/api/auth/jwks')
+)
+
+
+// middleware function 
+const verifyToken = async(req, res, next) =>{
+  const authHeader = req?.headers.authorization;
+  if(!authHeader){
+    return res.status(401).json({message : "Unauthorized"});
+  }
+  const token = authHeader.split(" ")[1];
+  
+  if(!token){
+    return res.status(401).json({message : "Unauthorized"});
+  }
+
+  try{
+    const {payload} = await jwtVerify(token, JWKS);
+    next()
+  } catch (err){
+    return res.status(403).json({
+      message : "Forbidden"
+    })
+  }
+  
+}
 
 
 async function run() {
@@ -39,7 +68,8 @@ async function run() {
       res.json(result);
     });
 
-    app.get('/destination/:id', async(req, res) =>{
+
+    app.get('/destination/:id',verifyToken, async(req, res) =>{
       const {id} = req.params;
       const result = await destinationCollection.findOne(
         {_id : new ObjectId(id)}
@@ -71,7 +101,7 @@ async function run() {
 
 
     // for deleting destinations 
-    app.delete('/destination/:id', async (req, res) =>{
+    app.delete('/destination/:id', verifyToken, async (req, res) =>{
       const {id} = await req.params;
       const result = await destinationCollection.deleteOne({
         _id : new ObjectId(id)
@@ -87,17 +117,9 @@ async function run() {
       res.json(result);
     });
 
-    // app.get('/booking/:userId', async(req, res) =>{
-    //   const {userId} = await req.params;
-    //   const result = await bookingCollection.findOne(
-    //     {_id : new ObjectId(userId)}
-    //   )
-
-    //   res.json(result);
-    // });
 
     // getting bookings from user id
-    app.get('/booking/:userId', async(req, res) => {
+    app.get('/booking/:userId',verifyToken, async(req, res) => {
       const {userId} = req.params; 
       const result = await bookingCollection.find({userId : userId}).toArray();
 
@@ -106,7 +128,7 @@ async function run() {
 
 
     // api for adding booking data
-    app.post("/booking", async(req, res) => {
+    app.post("/booking",verifyToken, async(req, res) => {
       const bookingData = req.body;
       const result = await bookingCollection.insertOne(bookingData);
 
