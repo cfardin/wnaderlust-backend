@@ -54,7 +54,7 @@ const verifyToken = async(req, res, next) =>{
 
 async function run() {
   try {
-    // await client.connect();
+    await client.connect();
 
     const db = client.db("wanderlust");
     const destinationCollection = db.collection("destinations");
@@ -95,7 +95,7 @@ async function run() {
 
     // for updating destination data
     app.patch('/destination/:id', async(req, res) =>{
-      const {id} = await req.params;
+      const {id} = req.params;
       const updatedData = req.body;
 
       const result = await destinationCollection.updateOne(
@@ -109,7 +109,7 @@ async function run() {
 
     // for deleting destinations 
     app.delete('/destination/:id', verifyToken, async (req, res) =>{
-      const {id} = await req.params;
+      const {id} = req.params;
       const result = await destinationCollection.deleteOne({
         _id : new ObjectId(id)
       });
@@ -154,7 +154,7 @@ async function run() {
 
 
 
-    // await client.db("admin").command({ ping: 1 });
+    await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
